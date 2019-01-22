@@ -73,26 +73,33 @@ for (i in noteids) {
           
           #IF a Standard Concept code was found for the SNOMED code
           if (!is.na(standard_concept_id)) {
-            #Write the 'Category' detected by Amazon Comprehend Medical into the 'term_modifiers' field
-            term_modifiers <- paste(entity$Category, term_modifiers, sep=" ")
+            #Write the 'Category' and 'Type' detected by Amazon Comprehend Medical into the 'term_modifiers' field
+            term_modifiers <- paste(term_modifiers, "CATEGORY: ", entity$Category,"; ", "TYPE: ", entity$Type, ";", sep="")
+            
             #Also, write any 'Traits' detected by Amazon Comprehend Medical into the 'term_modifiers' field
-            for (trait in entity$Traits) {
-              if (trait$Score >= min_score) {
-                term_modifiers <- paste(trait$Name, term_modifiers, sep=" ")
-              }
-            }
-            #Also, write any 'Attributes' detected by Amazon Comprehend Medical into the 'term_modifiers' field
-            for (attribute in entity$Attributes){
-              if (attribute$Score >= min_score){
-                term_modifiers <- paste(attribute$Text, term_modifiers, sep=" ")
-                for (attribute_trait in attribute$Traits) {
-                  if (attribute_trait$Score >= min_score) {
-                    term_modifiers <- paste(attribute_trait$Name, term_modifiers, sep=" ")
-                  }
+            if (length(entity$Traits) > 0) {
+              for (trait in entity$Traits) {
+                if (trait$Score >= min_score) {
+                  term_modifiers <- paste(term_modifiers, " TRAIT: ", trait$Name, ";", sep="")
                 }
               }
             }
             
+            #Also, write any 'Attributes' detected by Amazon Comprehend Medical into the 'term_modifiers' field
+            if (length(entity$Attributes) > 0){
+              for (attribute in entity$Attributes){
+                if (attribute$Score >= min_score){
+                  term_modifiers <- paste(term_modifiers, " ATTRIBUTE: ", attribute$Text,", ", "ATTRIBUTE_TYPE: ", attribute$Type, sep="")
+                  for (attribute_trait in attribute$Traits) {
+                    if (attribute_trait$Score >= min_score) {
+                      term_modifiers <- paste(term_modifiers, ", ATTRIBUTE_TRAIT: ",attribute_trait$Name, sep="")
+                    }
+                  }
+                term_modifiers <- paste(term_modifiers, ";", sep="")
+                }
+              }
+            }
+
             #Finally, write the a new record to the NOTE_NLP table with the following field mapping
             # offset: The character offset within the note, provided by Amazon Comprehend Medical, for the detected medically relevant text 
             # lexical_variant: The actual medically relevant text detected by Amazon Comprehend Medical (called 'Text' in the returned JSON)
@@ -114,4 +121,3 @@ for (i in noteids) {
 
 #Print interesting fields from the NOTE_NLP table
 View(DatabaseConnector::querySql(connectionDetails, paste0("SELECT note_nlp_id, note_id, \"offset\", lexical_variant, note_nlp_concept_id,nlp_system, term_modifiers FROM ",cdmDatabaseSchema,".note_nlp;")))
-
