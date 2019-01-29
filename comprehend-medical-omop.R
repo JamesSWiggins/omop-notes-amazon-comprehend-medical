@@ -1,5 +1,8 @@
 #Source the DatabaseConnector::connect() call for my OMOP database
-source("~/omop-connection.R")
+connectionDetails <- DatabaseConnector::createConnectionDetails(dbms = "redshift",
+                                                                server = "myRedshiftClusterURL.us-east-1.redshift.amazonaws.com/mycdm",
+                                                                user = "master",
+                                                                password = "password")
 cdmDatabaseSchema <- "CMSDESynPUF1k"
 
 #Show the contents of the OMOP Notes table
