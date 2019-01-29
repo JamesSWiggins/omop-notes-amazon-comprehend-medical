@@ -1,4 +1,4 @@
-# omop-notes-amazon-comprehend-medical
+# Processing OMOP Clinical Notes with Amazon Comprehend Medical
 Gain medical insights from clinical notes stored in the OMOP Common Data Model using the Amazon Comprehend Medical NLP service.
 
 This R code can be used to clinical notes from the OMOP 'note' table, process them using [Amazon Comprehend Medical](https://aws.amazon.com/comprehend/medical/), and write them into the OMOP 'note_nlp' table.  The high-level architecture used to do this is shown below.
